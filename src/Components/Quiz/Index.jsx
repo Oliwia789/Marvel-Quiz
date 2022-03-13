@@ -11,24 +11,30 @@ toast.configure()
 
 class Quiz extends Component {
 
-    state = {
-        levelNames: ["debutant", "confirme", "expert"],
-        quizLevel: 0,
-        maxQuestions: 10,
-        storedQuestions: [],
-        question: null,
-        options: [],
-        idQuestion: 0,
-        btnDisabled: true,
-        userAnswer: null,
-        score: 0,
-        showWelcomeMsg: false,
-        quizEnd: false
+    constructor(props) {
+        super(props) 
+        this.initalState = {
+            levelNames: ["debutant", "confirme", "expert"],
+            quizLevel: 0,
+            maxQuestions: 10,
+            storedQuestions: [],
+            question: null,
+            options: [],
+            idQuestion: 0,
+            btnDisabled: true,
+            userAnswer: null,
+            score: 0,
+            showWelcomeMsg: false,
+            quizEnd: false
+        }
+
+        this.state = this.initalState
+
+        this.storedDataRef = React.createRef()
     }
 
-    storedDataRef = React.createRef()
 
-    showWelcomeMsg = pseudo => {
+    showToastMsg = pseudo => {
         if(!this.state.showWelcomeMsg) {
             this.setState({
                 showWelcomeMsg: true
@@ -63,14 +69,14 @@ class Quiz extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.storedQuestions !== prevState.storedQuestions) {
+        if ((this.state.storedQuestions !== prevState.storedQuestions) && this.state.storedQuestions.length) {
             this.setState({
                 question: this.state.storedQuestions[this.state.idQuestion].question,
                 options: this.state.storedQuestions[this.state.idQuestion].options
             })
 
         }
-        if (this.state.idQuestion !== prevState.idQuestion) {
+        if ((this.state.idQuestion !== prevState.idQuestion) && this.state.storedQuestions.length) {
             this.setState({
                 question: this.state.storedQuestions[this.state.idQuestion].question,
                 options: this.state.storedQuestions[this.state.idQuestion].options,
@@ -78,8 +84,14 @@ class Quiz extends Component {
                 btnDisabled: true
             })
         }
-        if(this.props.userData.pseudo) {
-            this.showWelcomeMsg(this.props.userData.pseudo)
+
+        if( this.state.quizEnd !== prevState.quizEnd) {
+            const gradePercent = this.getPercent(this.state.maxQuestions, this.state.score)
+            this.gameOver(gradePercent)
+        }
+
+        if(this.props.userData.pseudo !== prevProps.userData.pseudo) {
+            this.showToastMsg(this.props.userData.pseudo)
         }
     }
 
@@ -92,7 +104,9 @@ class Quiz extends Component {
 
     nextQuestion = () => {
         if(this.state.idQuestion === this.state.maxQuestions -1) {
-            this.gameOver()
+            this.setState({
+                quizEnd: true
+            })
 
         } else {
             this.setState((prevState) => ({
@@ -124,11 +138,26 @@ class Quiz extends Component {
         }
     }
 
-    gameOver = () => {
-        this.setState({
-            quizEnd: true
-        })
+    getPercent = (maxQuestion, ourScore) => (ourScore / maxQuestion) *100
 
+    gameOver = (percent) => {
+
+        if(percent >= 50) {
+            this.setState({
+                quizLevel: this.state.quizLevel +1,
+                percent
+            })
+        } else {
+            this.setState({
+                percent
+            })
+        }
+
+    }
+
+    loadLevelQuestions = (param) => {
+        this.setState({...this.initalState, quizLevel: param})
+        this.loadQuestions(this.state.levelNames[param])
     }
 
     render(){
@@ -140,7 +169,7 @@ class Quiz extends Component {
 
         })
 
-        return this.state.quizEnd ? (<QuizOver ref={this.storedDataRef}/>) : (
+        return this.state.quizEnd ? (<QuizOver ref={this.storedDataRef} levelNames={this.state.levelNames} score={this.state.score} maxQuestions={this.state.maxQuestions} quizLevel={this.state.quizLevel} percent={this.state.percent} loadLevelQuestions={this.loadLevelQuestions}/>) : (
             <>
             <Levels/>
             <ProgressBar idQuestion={this.state.idQuestion} maxQuestion={this.state.maxQuestions}/>
