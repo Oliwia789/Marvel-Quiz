@@ -1,5 +1,8 @@
+import firebase from "firebase/compat/app"
 import {initializeApp} from "firebase/app"
-import {getAuth} from "firebase/auth"
+import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} from "firebase/auth"
+import "firebase/compat/firestore"
+import { doc } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC18Nar0FRuhoI8QGn_WuNgnWLDK0jv7aY",
@@ -13,17 +16,22 @@ const firebaseConfig = {
 
 class Firebase {
     constructor() {
-        const app = initializeApp(firebaseConfig)
+        const app = firebase.initializeApp(firebaseConfig)
         this.auth = getAuth(app)
+        this.db = app.firestore()
     }
 
     signupUser = (email, password) => 
-    this.auth.createUserWithEmailAndPassword(email, password)
+    createUserWithEmailAndPassword(this.auth, email, password)
 
     loginUser = (email, password) => 
-    this.auth.signInWithEmailAndPassword(email, password)
+    signInWithEmailAndPassword(this.auth, email, password)
 
     signOutUser = () => this.auth.signOut()
+
+    passwordReset = (email) => sendPasswordResetEmail(this.auth, email)
+
+    user = (uid) => this.db.doc(`users/${uid}`)
 }
 
 export default Firebase

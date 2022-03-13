@@ -7,6 +7,7 @@ import Welcome from "../Welcome/Index";
 import Login from "../Login/Index";
 import SignUp from "../SingUp/Index";
 import ErrorPage from "../Error/Index";
+import ForgetPassword from "../ForgetPassword/Index";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route exact path="/" component={Landing}/>
           <Route path="/welcome" component={Welcome}/>
           <Route path="/login" component={Login}/>
+          <Route path="/forgetPassword" component={ForgetPassword}/>
           <Route path="/signup" component={SignUp}/>
           <Route component={ErrorPage}/>
         </Switch>
